@@ -2863,7 +2863,7 @@ static VALUE FUNCTION(rb_gsl_vector,div_inplace)(VALUE vv1, VALUE vv2)
 
 static VALUE FUNCTION(rb_gsl_vector,zip)(int argc, VALUE *argv, VALUE obj)
 {
-  GSL_TYPE(gsl_vector) *v0, **vp, *vnew;
+  GSL_TYPE(gsl_vector) *v0,  *vnew;
   VALUE ary;
   size_t i, j;
   int argc2;
@@ -2881,24 +2881,21 @@ static VALUE FUNCTION(rb_gsl_vector,zip)(int argc, VALUE *argv, VALUE obj)
   for (i = 0; (int) i < argc2; i++) {
     CHECK_VEC(argv2[i]);
   }
-  vp = (GSL_TYPE(gsl_vector)**)malloc(sizeof(GSL_TYPE(gsl_vector)**));
-  for (i = 0; (int) i < argc2; i++) {
-    Data_Get_Struct(argv2[i], GSL_TYPE(gsl_vector), vp[i]);
-  }
   ary = rb_ary_new2(v0->size);
   for (i = 0; i < v0->size; i++) {
     vnew = FUNCTION(gsl_vector,alloc)(argc2 + 1);
     FUNCTION(gsl_vector,set)(vnew, 0, FUNCTION(gsl_vector,get)(v0, i));
     for (j = 0; (int) j < argc2; j++) {
-      if (i < vp[j]->size) {
-        FUNCTION(gsl_vector,set)(vnew, j+1, FUNCTION(gsl_vector,get)(vp[j], i));
+      GSL_TYPE(gsl_vector) *argj;
+      Data_Get_Struct(argv2[j], GSL_TYPE(gsl_vector), argj);
+      if (i < argj->size) {
+        FUNCTION(gsl_vector,set)(vnew, j+1, FUNCTION(gsl_vector,get)(argj, i));
       } else {
         FUNCTION(gsl_vector,set)(vnew, j+1, 0.0);
       }
     }
     rb_ary_store(ary, i, Data_Wrap_Struct(GSL_TYPE(cgsl_vector), 0, FUNCTION(gsl_vector,free), vnew));
   }
-  free((GSL_TYPE(gsl_vector)**)vp);
   return ary;
 }
 
@@ -2919,9 +2916,7 @@ static VALUE FUNCTION(rb_gsl_vector,join)(int argc, VALUE *argv, VALUE obj)
     rb_raise(rb_eArgError, "Wrong number of arguments (%d for 0 or 1)", argc);
   }
   Data_Get_Struct(obj, GSL_TYPE(gsl_vector), v);
-  //  p = (char *) malloc((10+RSTRING(sep))*v->size + 1);
-  p = (char *) malloc((10+RSTRING_LEN(sep))*v->size + 1);
-  str = rb_str_new2(p);
+  str = rb_str_new2("");
   for (i = 0; i < v->size; i++) {
 #ifdef BASE_DOUBLE
     rb_str_catf(str, "%4.3e", FUNCTION(gsl_vector,get)(v, i));

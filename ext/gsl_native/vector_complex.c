@@ -1937,7 +1937,7 @@ static VALUE rb_gsl_vector_complex_phasor_singleton(int argc, VALUE *argv, VALUE
 
 static VALUE rb_gsl_vector_complex_zip(int argc, VALUE *argv, VALUE obj)
 {
-  gsl_vector_complex *v0, **vp, *vnew;
+  gsl_vector_complex *v0, *vnew;
   VALUE ary;
   size_t i, j;
   int argc2;
@@ -1956,24 +1956,21 @@ static VALUE rb_gsl_vector_complex_zip(int argc, VALUE *argv, VALUE obj)
   for (i = 0; (int) i < argc2; i++) {
     CHECK_VECTOR_COMPLEX(argv2[i]);
   }
-  vp = (gsl_vector_complex**) malloc(sizeof(gsl_vector_complex**));
-  for (i = 0; (int) i < argc2; i++) {
-    Data_Get_Struct(argv2[i], gsl_vector_complex, vp[i]);
-  }
   ary = rb_ary_new2(v0->size);
   for (i = 0; i < v0->size; i++) {
     vnew = gsl_vector_complex_alloc(argc2 + 1);
     gsl_vector_complex_set(vnew, 0, gsl_vector_complex_get(v0, i));
     for (j = 0; (int) j < argc2; j++) {
-      if (i < vp[j]->size) {
-        gsl_vector_complex_set(vnew, j+1, gsl_vector_complex_get(vp[j], i));
+      gsl_vector_complex *argj;
+      Data_Get_Struct(argv2[j], gsl_vector_complex, argj);
+      if (i < argj->size) {
+        gsl_vector_complex_set(vnew, j+1, gsl_vector_complex_get(argj, i));
       } else {
         gsl_vector_complex_set(vnew, j+1, zzero);
       }
     }
     rb_ary_store(ary, i, Data_Wrap_Struct(cgsl_vector_complex, 0, gsl_vector_complex_free, vnew));
   }
-  free((gsl_vector_complex**) vp);
   return ary;
 }
 

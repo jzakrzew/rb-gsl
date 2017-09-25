@@ -554,9 +554,9 @@ static VALUE rb_gsl_linalg_complex_householder_transform(int argc, VALUE *argv, 
     Data_Get_Struct(obj, gsl_vector_complex, v);
     break;
   }
-  z = (gsl_complex*) malloc(sizeof(gsl_complex));
+  z = (gsl_complex*) ALLOC(gsl_complex);
   *z = gsl_linalg_complex_householder_transform(v);
-  return Data_Wrap_Struct(cgsl_complex, 0, free, z);
+  return Data_Wrap_Struct(cgsl_complex, 0, xfree, z);
 }
 
 /* singleton */

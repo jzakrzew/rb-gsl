@@ -86,8 +86,8 @@ void FUNCTION(rbgsl_tensor,free)(GSL_TYPE(rbgsl_tensor) *t)
 void FUNCTION(rbgsl_tensor,free2)(GSL_TYPE(rbgsl_tensor) *t)
 {
   gsl_permutation_free(t->indices);
-  free((GSL_TYPE(tensor)*)t->tensor);
-  free((GSL_TYPE(rbgsl_tensor) *)t);
+  xfree((GSL_TYPE(tensor)*)t->tensor);
+  xfree((GSL_TYPE(rbgsl_tensor) *)t);
 }
 
 /* singleton methods */
@@ -735,6 +735,7 @@ GSL_TYPE(tensor) FUNCTION(tensor,subtensor)(const GSL_TYPE(tensor) *t,
 
 static VALUE FUNCTION(rb_tensor,subtensor)(int argc, VALUE *argv, VALUE obj)
 {
+  VALUE ret;
   GSL_TYPE(rbgsl_tensor) *t, *tnew;
   unsigned int rank;
   size_t n;
@@ -742,14 +743,23 @@ static VALUE FUNCTION(rb_tensor,subtensor)(int argc, VALUE *argv, VALUE obj)
   /* n: number of indices given */
   rbgsl_tensor_get_indices(argc, argv, t->indices, &n);
   rank = t->tensor->rank - n;
-  tnew = ALLOC(GSL_TYPE(rbgsl_tensor));
-  tnew->tensor = (GSL_TYPE(tensor)*)malloc(sizeof(GSL_TYPE(tensor)));
+
+  tnew = ZALLOC(GSL_TYPE(rbgsl_tensor));
+  /* wrap it in an object immediately to prevent memory leaks if other allocations fail */
+  ret = Data_Wrap_Struct(QUALIFIED_VIEW(cgsl_tensor,view), 0, FUNCTION(rbgsl_tensor,free2), tnew);
+
+  tnew->tensor = (GSL_TYPE(tensor)*)ALLOC(GSL_TYPE(tensor));
   *(tnew->tensor) = FUNCTION(tensor,subtensor)(t->tensor, rank, t->indices->data);
+
   if (rank == 0)
     tnew->indices = gsl_permutation_alloc(1);
   else
     tnew->indices = gsl_permutation_alloc(rank);
-  return Data_Wrap_Struct(QUALIFIED_VIEW(cgsl_tensor,view), 0, FUNCTION(rbgsl_tensor,free2), tnew);
+
+  if (tnew->indices == NULL)
+    rb_raise(rb_eRuntimeError, "malloc failed");
+
+  return ret;
 }
 
 #ifdef BASE_DOUBLE

@@ -34,17 +34,40 @@ typedef struct ufunc_struct
 static VALUE cUFunc;
 static ufunc_struct* ufunc_struct_alloc(size_t n_dim) {
   ufunc_struct *p;
-  p = (ufunc_struct*) malloc(sizeof(ufunc_struct));
-  p->fptr = malloc(sizeof(UFUNC)*n_dim);
+  p = (ufunc_struct*) ALLOC(ufunc_struct);
+
+  /* just use calloc, because catching exceptions from ALLOC here would be too painful */
+  p->fptr = calloc(sizeof(UFUNC), n_dim);
+  if (p->fptr == NULL)
+    goto fail;
+
   return p;
+
+fail:
+  xfree(p)
+  rb_raise(rb_eRuntimeError, "malloc failed");
 }
+
 static void ufunc_struct_free(ufunc_struct *p)
 {
   free(p->fptr);
-  free(p);
+  xfree(p);
 }
 
 static int func_u(double x, double y[], void *data);
+
+static void rb_gsl_multifit_ndlinear_alloc_check_argv(VALUE *argv, int istart)
+{
+  if (TYPE(argv[istart]) != T_ARRAY) {
+    rb_raise(rb_eTypeError, "Wrong argument type %s (Array expected)",
+             rb_class2name(CLASS_OF(argv[istart])));
+  }
+  if (TYPE(argv[istart+1]) != T_ARRAY) {
+    rb_raise(rb_eTypeError, "Wrong argument type %s (Array expected)",
+             rb_class2name(CLASS_OF(argv[istart+1])));
+  }
+}
+
 static VALUE rb_gsl_multifit_ndlinear_alloc(int argc, VALUE *argv, VALUE klass)
 {
   gsl_multifit_ndlinear_workspace *w;
@@ -57,25 +80,14 @@ static VALUE rb_gsl_multifit_ndlinear_alloc(int argc, VALUE *argv, VALUE klass)
     istart = 1;
     CHECK_FIXNUM(argv[0]);
     n_dim = FIX2INT(argv[0]);
-  /* no break */
+    rb_gsl_multifit_ndlinear_alloc_check_argv(argv, istart);
+    break;
   case 3:
-    if (TYPE(argv[istart]) != T_ARRAY) {
-      rb_raise(rb_eTypeError, "Wrong argument type %s (Array expected)",
-               rb_class2name(CLASS_OF(argv[istart])));
-    }
-    if (TYPE(argv[istart+1]) != T_ARRAY) {
-      rb_raise(rb_eTypeError, "Wrong argument type %s (Array expected)",
-               rb_class2name(CLASS_OF(argv[istart+1])));
-    }
-    //    n_dim = RARRAY(argv[istart])->len;
     n_dim = RARRAY_LEN(argv[istart]);
-    N = (size_t*) malloc(sizeof(size_t)*n_dim);
+    rb_gsl_multifit_ndlinear_alloc_check_argv(argv, istart);
     break;
   default:
     rb_raise(rb_eArgError, "Wrong number of arguments (%d for 3 or 4)", argc);
-  }
-  for (i = 0; i < n_dim; i++) {
-    N[i] = FIX2INT(rb_ary_entry(argv[istart], i));
   }
   params = rb_ary_new2(NDLINEAR_ARY_SIZE);
   rb_ary_store(params, INDEX_NDIM, INT2FIX((int) n_dim));
@@ -89,9 +101,14 @@ static VALUE rb_gsl_multifit_ndlinear_alloc(int argc, VALUE *argv, VALUE klass)
   pp = Data_Wrap_Struct(cUFunc, 0, ufunc_struct_free, p);
   rb_ary_store(params, INDEX_FUNCS, pp);
 
+  N = (size_t*) ALLOC_N(size_t, n_dim);
+  for (i = 0; i < n_dim; i++) {
+    N[i] = FIX2INT(rb_ary_entry(argv[istart], i));
+  }
+
   w = gsl_multifit_ndlinear_alloc(n_dim, N, p->fptr, (void*) params);
 
-  free((size_t*) N);
+  xfree(N);
 
   wspace = Data_Wrap_Struct(cWorkspace, multifit_ndlinear_mark, gsl_multifit_ndlinear_free, w);
   RB_GC_GUARD(params);

@@ -89,7 +89,7 @@ static VALUE rb_gsl_vector_complex_to_nvector(VALUE obj)
 static struct NARRAY* rb_gsl_na_view_alloc(int rank, int total, int type)
 {
   struct NARRAY *na;
-  na = (struct NARRAY*) malloc(sizeof(struct NARRAY));
+  na = (struct NARRAY *) ALLOC(struct NARRAY);
   na->rank = rank;
   na->total = total;
   na->type = type;
@@ -97,7 +97,13 @@ static struct NARRAY* rb_gsl_na_view_alloc(int rank, int total, int type)
   // the GSL::Vector being referenced.
   na->ref = Qtrue;       /* to initialize */
   na->shape = (int *) malloc(sizeof(int)*rank);
+  if (na->shape == NULL)
+    goto fail;
   return na;
+
+fail:
+  xfree(na);
+  rb_raise(rb_eRuntimeError, "malloc failed");
 }
 
 static void rb_gsl_na_view_free(struct NARRAY *na)

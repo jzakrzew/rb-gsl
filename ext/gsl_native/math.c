@@ -105,9 +105,9 @@ VALUE rb_gsl_math_complex_eval(gsl_complex (*func)(gsl_complex), VALUE obj)
   size_t i, j;
   if (COMPLEX_P(obj)) {
     Data_Get_Struct(obj, gsl_complex, z);
-    znew = xmalloc(sizeof(gsl_complex));
+    znew = ALLOC(gsl_complex);
     *znew = (*func)(*z);
-    return Data_Wrap_Struct(cgsl_complex, 0, free, znew);
+    return Data_Wrap_Struct(cgsl_complex, 0, xfree, znew);
   } else if (VECTOR_COMPLEX_P(obj)) {
     Data_Get_Struct(obj, gsl_vector_complex, v);
     vnew = gsl_vector_complex_alloc(v->size);
@@ -177,7 +177,7 @@ static VALUE rb_gsl_math_eval(double (*func)(const double), VALUE xx)
       nm = NM_STORAGE_DENSE(xx);
       size = NM_ELEMENTS_COUNT(xx);
       ptr1 = (double*) nm->elements;
-      ary = rb_nmatrix_dense_create(FLOAT64, nm->shape, nm->dim, nm->elements, 
+      ary = rb_nmatrix_dense_create(FLOAT64, nm->shape, nm->dim, nm->elements,
         size);
       ptr2 = (double*)NM_DENSE_ELEMENTS(ary);
       for (i = 0; i < size; i++) ptr2[i] = (*func)(ptr1[i]);
@@ -255,7 +255,7 @@ static VALUE rb_gsl_math_eval2(double (*func)(const double, const double), VALUE
       nmy = NM_STORAGE_DENSE(yy);
       ptr1 = (double*) nmx->elements;
       ptr2 = (double*) nmy->elements;
-      ary = rb_nmatrix_dense_create(FLOAT64, nmx->shape, nmx->dim, nmx->elements, 
+      ary = rb_nmatrix_dense_create(FLOAT64, nmx->shape, nmx->dim, nmx->elements,
         size);
       ptr3 = (double*)NM_DENSE_ELEMENTS(ary);
       for (i = 0; i < size; i++) ptr3[i] = (*func)(ptr1[i], ptr2[i]);
@@ -394,7 +394,7 @@ VALUE rb_gsl_pow(VALUE obj, VALUE xx, VALUE nn)
       nm = NM_STORAGE_DENSE(xx);
       size = NM_ELEMENTS_COUNT(xx);
       ptr1 = (double*) nm->elements;
-      ary = rb_nmatrix_dense_create(FLOAT64, nm->shape, nm->dim, nm->elements, 
+      ary = rb_nmatrix_dense_create(FLOAT64, nm->shape, nm->dim, nm->elements,
         size);
       ptr2 = (double*)NM_DENSE_ELEMENTS(ary);
       for (i = 0; i < size; i++) ptr2[i] = pow(ptr1[i], n);
@@ -487,7 +487,7 @@ static VALUE rb_gsl_pow_int(VALUE obj, VALUE xx, VALUE nn)
       nm = NM_STORAGE_DENSE(xx);
       size = NM_ELEMENTS_COUNT(xx);
       ptr1 = (double*) nm->elements;
-      ary = rb_nmatrix_dense_create(FLOAT64, nm->shape, nm->dim, nm->elements, 
+      ary = rb_nmatrix_dense_create(FLOAT64, nm->shape, nm->dim, nm->elements,
         size);
       ptr2 = (double*)NM_DENSE_ELEMENTS(ary);
       for (i = 0; i < size; i++) ptr2[i] = gsl_pow_int(ptr1[i], n);

@@ -120,8 +120,8 @@ static VALUE rb_cqpminimizer_test_infeasibility(VALUE obj, VALUE e)
 static VALUE rb_cqp_data_alloc(VALUE klass)
 {
   gsl_cqp_data *d;
-  d = (gsl_cqp_data*) malloc(sizeof(gsl_cqp_data));
-  return Data_Wrap_Struct(klass, 0, free, d);
+  d = (gsl_cqp_data*) ALLOC(gsl_cqp_data);
+  return Data_Wrap_Struct(klass, 0, xfree, d);
 }
 
 static VALUE rb_cqp_data_Q(VALUE obj)
@@ -280,4 +280,3 @@ void Init_cqp(VALUE module)
 }
 
 #endif
-

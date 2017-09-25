@@ -661,9 +661,9 @@ static VALUE rb_gsl_monte_miser_params_get(VALUE obj)
   gsl_monte_miser_state *s = NULL;
   gsl_monte_miser_params *p = NULL;
   Data_Get_Struct(obj, gsl_monte_miser_state, s);
-  p = (gsl_monte_miser_params *) malloc(sizeof(gsl_monte_miser_params));
+  p = (gsl_monte_miser_params *) ALLOC(gsl_monte_miser_params);
   gsl_monte_miser_params_get(s, p);
-  return Data_Wrap_Struct(cgsl_monte_miser_params, 0, free, p);
+  return Data_Wrap_Struct(cgsl_monte_miser_params, 0, xfree, p);
 }
 static VALUE rb_gsl_monte_miser_params_set(VALUE obj, VALUE params)
 {
@@ -745,9 +745,9 @@ static VALUE rb_gsl_monte_vegas_params_get(VALUE obj)
   gsl_monte_vegas_state *s = NULL;
   gsl_monte_vegas_params *p = NULL;
   Data_Get_Struct(obj, gsl_monte_vegas_state, s);
-  p = (gsl_monte_vegas_params *) malloc(sizeof(gsl_monte_vegas_params));
+  p = (gsl_monte_vegas_params *) ALLOC(gsl_monte_vegas_params);
   gsl_monte_vegas_params_get(s, p);
-  return Data_Wrap_Struct(cgsl_monte_vegas_params, 0, free, p);
+  return Data_Wrap_Struct(cgsl_monte_vegas_params, 0, xfree, p);
 }
 static VALUE rb_gsl_monte_vegas_params_set(VALUE obj, VALUE params)
 {

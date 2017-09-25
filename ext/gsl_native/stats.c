@@ -393,11 +393,11 @@ static VALUE rb_gsl_stats_median(int argc, VALUE *argv, VALUE obj)
   size_t stride, size;
   double median, *data = NULL, *data2 = NULL;
   data = get_vector_stats2(argc, argv, obj, &stride, &size);
-  data2 = (double *) malloc(sizeof(double)*size*stride);
-  memcpy(data2, data, sizeof(double)*size*stride);
+  data2 = (double *) ALLOC_N(double, size*stride);
+  MEMCPY(data2, data, double, size*stride);
   gsl_sort(data2, stride, size);
   median = gsl_stats_median_from_sorted_data(data2, stride, size);
-  free(data2);
+  xfree(data2);
   return rb_float_new(median);
 }
 

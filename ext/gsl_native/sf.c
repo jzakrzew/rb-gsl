@@ -1272,10 +1272,10 @@ VALUE rb_gsl_sf_eval_complex(double (*f)(double), VALUE obj)
   size_t i, j;
   if (COMPLEX_P(obj)) {
     Data_Get_Struct(obj, gsl_complex, z);
-    znew = xmalloc(sizeof(gsl_complex));
+    znew = ALLOC(gsl_complex);
     GSL_SET_REAL(znew, (*f)(GSL_REAL(*z)));
     GSL_SET_IMAG(znew, (*f)(GSL_IMAG(*z)));
-    return Data_Wrap_Struct(cgsl_complex, 0, free, znew);
+    return Data_Wrap_Struct(cgsl_complex, 0, xfree, znew);
   } else if (VECTOR_COMPLEX_P(obj)) {
     Data_Get_Struct(obj, gsl_vector_complex, v);
     vnew = gsl_vector_complex_alloc(v->size);

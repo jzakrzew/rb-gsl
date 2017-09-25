@@ -19,14 +19,14 @@ VALUE rb_tamu_anova_alloc(int argc, VALUE *argv, VALUE klass)
       I = NUM2INT(argv[2]);
       J = NUM2INT(argv[3]);
     }
-    table = (struct tamu_anova_table *) malloc(sizeof(struct tamu_anova_table));
+    table = (struct tamu_anova_table *) ALLOC(struct tamu_anova_table);
     *table = tamu_anova(data->data, factor->data, I, J);
     break;
   default:
     rb_raise(rb_eArgError, "Wrong number of arguments (%d for 3 or 4)", argc);
     break;
   }
-  return Data_Wrap_Struct(klass, 0, free, table);
+  return Data_Wrap_Struct(klass, 0, xfree, table);
 }
 
 VALUE rb_tamu_anova_printtable(VALUE *vTable)
