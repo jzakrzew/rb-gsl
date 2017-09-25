@@ -607,27 +607,15 @@ static VALUE rb_gsl_odeiv_evolve_last_step(VALUE obj)
 static VALUE rb_gsl_odeiv_evolve_y0(VALUE obj)
 {
   gsl_odeiv_evolve *e = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, gsl_odeiv_evolve, e);
-  v = gsl_vector_view_alloc();
-  v->vector.data = e->y0;
-  v->vector.size = e->dimension;
-  v->vector.stride = 1;
-  v->vector.owner = 0;
-  return Data_Wrap_Struct(cgsl_vector_view_ro, 0, gsl_vector_view_free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_vector_view_ro, e->y0, e->dimension, 1);
 }
 
 static VALUE rb_gsl_odeiv_evolve_yerr(VALUE obj)
 {
   gsl_odeiv_evolve *e = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, gsl_odeiv_evolve, e);
-  v = gsl_vector_view_alloc();
-  v->vector.data = e->yerr;
-  v->vector.size = e->dimension;
-  v->vector.stride = 1;
-  v->vector.owner = 0;
-  return Data_Wrap_Struct(cgsl_vector_view_ro, 0, gsl_vector_view_free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_vector_view_ro, e->yerr, e->dimension, 1);
 }
 
 static VALUE rb_gsl_odeiv_evolve_apply(VALUE obj, VALUE cc, VALUE ss, VALUE sss,

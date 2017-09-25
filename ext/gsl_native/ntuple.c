@@ -123,12 +123,8 @@ VALUE rb_gsl_ntuple_size(VALUE klass, VALUE obj)
 VALUE rb_gsl_ntuple_data(VALUE obj)
 {
   gsl_ntuple *n = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, gsl_ntuple, n);
-  v = gsl_vector_view_alloc();
-  v->vector.size = n->size;
-  v->vector.data = n->ntuple_data;
-  return Data_Wrap_Struct(cgsl_vector_view, 0, gsl_vector_view_free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_vector_view, n->ntuple_data, n->size, 1);
 }
 
 /***** select_fn *****/

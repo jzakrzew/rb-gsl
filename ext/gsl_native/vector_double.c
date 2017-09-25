@@ -330,14 +330,6 @@ VALUE rb_gsl_range_to_gv(VALUE obj)
   for (i = 0; i < n; i++) gsl_vector_set(v, i, beg + (int)i);
   return Data_Wrap_Struct(cgsl_vector, 0, gsl_vector_free, v);
 }
-gsl_vector_view* gsl_vector_view_alloc()
-{
-  gsl_vector_view *vv = NULL;
-  vv = ALLOC(gsl_vector_view);
-  if (vv == NULL) rb_raise(rb_eNoMemError, "malloc failed");
-  vv->vector.owner = 0;
-  return vv;
-}
 
 void gsl_vector_view_free(gsl_vector_view * vv)
 {

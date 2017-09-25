@@ -263,25 +263,15 @@ static VALUE rb_gsl_histogram_set_ranges(int argc, VALUE *argv, VALUE obj)
 static VALUE rb_gsl_histogram_range(VALUE obj)
 {
   gsl_histogram *h = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, gsl_histogram, h);
-  v = gsl_vector_view_alloc();
-  v->vector.data = h->range;
-  v->vector.size = h->n + 1;
-  v->vector.stride = 1;
-  return Data_Wrap_Struct(cgsl_histogram_range, 0, gsl_vector_view_free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_histogram_range, h->range, h->n + 1, 1);
 }
 
 static VALUE rb_gsl_histogram_bin(VALUE obj)
 {
   gsl_histogram *h = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, gsl_histogram, h);
-  v = gsl_vector_view_alloc();
-  v->vector.data = h->bin;
-  v->vector.size = h->n;
-  v->vector.stride = 1;
-  return Data_Wrap_Struct(cgsl_histogram_bin, 0, gsl_vector_view_free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_histogram_bin, h->bin, h->n, 1);
 }
 
 static VALUE rb_gsl_histogram_set_ranges_uniform(int argc, VALUE *argv, VALUE obj)
@@ -902,25 +892,15 @@ static VALUE rb_gsl_histogram_pdf_sample(VALUE obj, VALUE r)
 static VALUE rb_gsl_histogram_pdf_range(VALUE obj)
 {
   gsl_histogram_pdf *h = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, gsl_histogram_pdf, h);
-  v = gsl_vector_view_alloc(h->n);
-  v->vector.data = h->range;
-  v->vector.size = h->n + 1;
-  v->vector.stride = 1;
-  return Data_Wrap_Struct(cgsl_histogram_range, 0, gsl_vector_view_free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_histogram_range, h->range, h->n + 1, 1);
 }
 
 static VALUE rb_gsl_histogram_pdf_sum(VALUE obj)
 {
   gsl_histogram_pdf *h = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, gsl_histogram_pdf, h);
-  v = gsl_vector_view_alloc(h->n);
-  v->vector.data = h->sum;
-  v->vector.size = h->n + 1;
-  v->vector.stride = 1;
-  return Data_Wrap_Struct(cgsl_vector_view_ro, 0, gsl_vector_view_free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_histogram_range, h->sum, h->n + 1, 1);
 }
 
 static VALUE rb_gsl_histogram_graph(int argc, VALUE *argv, VALUE obj)

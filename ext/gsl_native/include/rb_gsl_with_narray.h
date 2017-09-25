@@ -13,7 +13,7 @@ void carray_set_from_narray(double*, VALUE);
 
 VALUE rb_gsl_na_to_gsl_vector_view_method(VALUE na);
 VALUE rb_gsl_na_to_gsl_matrix(VALUE obj, VALUE nna);
-gsl_vector_view* na_to_gv_view(VALUE na);
+VALUE na_to_gv_view(VALUE na);
 gsl_matrix_view* na_to_gm_view(VALUE nna);
 
 gsl_vector_int_view* na_to_gv_int_view(VALUE na);

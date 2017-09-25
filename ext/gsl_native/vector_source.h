@@ -36,6 +36,17 @@
 #define VEC_VIEW_P VECTOR_INT_VIEW_P
 #endif
 
+typedef struct VIEW(rb_gsl_vector, view) {
+  /* view should be the first member, as the code below relies on this (due to typecasts) */
+  QUALIFIED_VIEW(gsl_vector,view) view;
+  VALUE obj;  /* the object to which vector's lifetime is bound to */
+} VIEW(rb_gsl_vector, view);
+
+static void FUNCTION(rb_gsl_vector,view_mark)(VIEW(rb_gsl_vector, view) *vv)
+{
+  rb_gc_mark(vv->obj);
+}
+
 void FUNCTION(get_range,beg_en_n)(VALUE range, BASE *beg, BASE *en, size_t *n, int *step);
 
 void get_range_beg_en_n_for_size(VALUE range,
@@ -1351,23 +1362,22 @@ static VALUE FUNCTION(rb_gsl_vector,inspect)(VALUE obj)
 
 static VALUE FUNCTION(rb_gsl_vector,subvector)(int argc, VALUE *argv, VALUE obj)
 {
-  GSL_TYPE(gsl_vector) *v = NULL;
-  QUALIFIED_VIEW(gsl_vector,view) *vv = NULL;
+  GSL_TYPE(gsl_vector) *v;
+  QUALIFIED_VIEW(gsl_vector,view) vv;
   size_t offset, stride, n;
   Data_Get_Struct(obj, GSL_TYPE(gsl_vector), v);
   parse_subvector_args(argc, argv, v->size, &offset, &stride, &n);
-  vv = ALLOC(QUALIFIED_VIEW(gsl_vector,view));
-  *vv = FUNCTION(gsl_vector,subvector_with_stride)(v, offset, stride, n);
+  vv = FUNCTION(gsl_vector,subvector_with_stride)(v, offset, stride, n);
   if (VEC_COL_P(obj))
-    return Data_Wrap_Struct(QUALIFIED_VIEW(cgsl_vector,col_view), 0, free, vv);
+    return FUNCTION(rb_gsl_vector,view_from_gsl)(obj, QUALIFIED_VIEW(cgsl_vector,col_view), vv);
   else
-    return Data_Wrap_Struct(QUALIFIED_VIEW(cgsl_vector,view), 0, free, vv);
+    return FUNCTION(rb_gsl_vector,view_from_gsl)(obj, QUALIFIED_VIEW(cgsl_vector,view), vv);
 }
 
 static VALUE FUNCTION(rb_gsl_vector,subvector_with_stride)(int argc, VALUE *argv, VALUE obj)
 {
   GSL_TYPE(gsl_vector) *v = NULL;
-  QUALIFIED_VIEW(gsl_vector,view) *vv = NULL;
+  QUALIFIED_VIEW(gsl_vector,view) vv;
   int offset = 0, step, length;
   size_t stride = 1, n;
   Data_Get_Struct(obj, GSL_TYPE(gsl_vector), v);
@@ -1425,12 +1435,11 @@ static VALUE FUNCTION(rb_gsl_vector,subvector_with_stride)(int argc, VALUE *argv
     rb_raise(rb_eArgError, "wrong number of arguments (%d for 1 - 3)", argc);
     break;
   }
-  vv = ALLOC(QUALIFIED_VIEW(gsl_vector,view));
-  *vv = FUNCTION(gsl_vector,subvector_with_stride)(v, (size_t)offset, stride, n);
+  vv = FUNCTION(gsl_vector,subvector_with_stride)(v, offset, stride, n);
   if (VEC_COL_P(obj))
-    return Data_Wrap_Struct(QUALIFIED_VIEW(cgsl_vector,col_view), 0, free, vv);
+    return FUNCTION(rb_gsl_vector,view_from_gsl)(obj, QUALIFIED_VIEW(cgsl_vector,col_view), vv);
   else
-    return Data_Wrap_Struct(QUALIFIED_VIEW(cgsl_vector,view), 0, free, vv);
+    return FUNCTION(rb_gsl_vector,view_from_gsl)(obj, QUALIFIED_VIEW(cgsl_vector,view), vv);
 }
 
 static VALUE FUNCTION(rb_gsl_vector,matrix_view)(int argc, VALUE *argv, VALUE obj)
@@ -1531,15 +1540,30 @@ VALUE FUNCTION(rb_gsl_vector,add_constant_bang)(VALUE obj, VALUE x)
   return obj;
 }
 
-QUALIFIED_VIEW(gsl_vector,view)* FUNCTION(rb_gsl_make_vector,view)(BASE *data, size_t size, size_t stride)
+/* 'obj' is the ruby object that owns the buffer pointed to by 'view.vector.data'
+   'klass' is the class of the view we want to get. */
+VALUE FUNCTION(rb_gsl_vector,view_from_gsl)(VALUE obj, VALUE klass,
+                                            QUALIFIED_VIEW(gsl_vector,view) view)
 {
-  QUALIFIED_VIEW(gsl_vector,view) *v = NULL;
-  v = ALLOC(QUALIFIED_VIEW(gsl_vector,view));
-  v->vector.size = size;
-  v->vector.stride = stride;
-  v->vector.owner = 0;
-  v->vector.data = data;
-  return v;
+  VIEW(rb_gsl_vector,view) *v = NULL;
+  v = ALLOC(VIEW(rb_gsl_vector,view));
+  v->obj = obj;
+  v->view = view;
+  return Data_Wrap_Struct(klass, FUNCTION(rb_gsl_vector,view_mark), xfree, v);
+}
+
+/* 'obj' is the ruby object that owns the buffer pointed to by 'data'
+   'klass' is the class of the view we want to get. */
+VALUE FUNCTION(rb_gsl_make_vector,view)(VALUE obj, VALUE klass, BASE *data,
+                                        size_t size, size_t stride)
+{
+  QUALIFIED_VIEW(gsl_vector,view) view;
+  view.vector.size = size;
+  view.vector.stride = stride;
+  view.vector.data = data;
+  view.vector.block = NULL;
+  view.vector.owner = 0;
+  return FUNCTION(rb_gsl_vector,view_from_gsl)(obj, klass, view);
 }
 
 #ifdef HAVE_TENSOR_TENSOR_H

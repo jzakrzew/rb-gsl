@@ -639,37 +639,22 @@ static VALUE rb_gsl_histogram2d_pdf_sample(VALUE obj, VALUE r1, VALUE r2)
 static VALUE rb_gsl_histogram2d_xrange(VALUE obj)
 {
   gsl_histogram2d *h = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, gsl_histogram2d, h);
-  v = gsl_vector_view_alloc(h->nx);
-  v->vector.data = h->xrange;
-  v->vector.size = h->nx + 1;
-  v->vector.stride = 1;
-  return Data_Wrap_Struct(cgsl_histogram_range, 0, gsl_vector_view_free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_histogram_range, h->xrange, h->nx + 1, 1);
 }
 
 static VALUE rb_gsl_histogram2d_yrange(VALUE obj)
 {
   gsl_histogram2d *h = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, gsl_histogram2d, h);
-  v = gsl_vector_view_alloc(h->ny);
-  v->vector.data = h->yrange;
-  v->vector.size = h->ny + 1;
-  v->vector.stride = 1;
-  return Data_Wrap_Struct(cgsl_histogram_range, 0, gsl_vector_view_free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_histogram_range, h->yrange, h->ny + 1, 1);
 }
 
 static VALUE rb_gsl_histogram2d_bin(VALUE obj)
 {
   gsl_histogram2d *h = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, gsl_histogram2d, h);
-  v = gsl_vector_view_alloc(h->nx*h->ny);
-  v->vector.data = h->bin;
-  v->vector.size = h->nx*h->ny;
-  v->vector.stride = 1;
-  return Data_Wrap_Struct(cgsl_histogram_bin, 0, gsl_vector_view_free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_histogram_bin, h->bin, h->nx*h->ny, 1);
 }
 
 void mygsl_histogram2d_yproject(const gsl_histogram2d *h2, size_t istart,
@@ -1039,4 +1024,3 @@ void Init_gsl_histogram2d(VALUE module)
 #ifdef CHECK_HISTOGRAM2D
 #undef CHECK_HISTOGRAM2D
 #endif
-

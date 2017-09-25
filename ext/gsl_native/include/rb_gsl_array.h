@@ -67,10 +67,6 @@ EXTERN VALUE mDirac;
 
 gsl_matrix_view* gsl_matrix_view_alloc();
 void gsl_matrix_view_free(gsl_matrix_view * mv);
-gsl_vector_view* gsl_vector_view_alloc();
-void gsl_vector_view_free(gsl_vector_view * v);
-gsl_vector_complex_view* gsl_vector_complex_view_alloc();
-void gsl_vector_complex_view_free(gsl_vector_view * vv);
 gsl_matrix_complex_view* gsl_matrix_complex_view_alloc();
 void gsl_matrix_complex_view_free(gsl_matrix_view * vv);
 
@@ -131,8 +127,13 @@ int gsl_vector_complex_mul(gsl_vector_complex *cv, const gsl_vector_complex *cv2
 int gsl_vector_complex_div(gsl_vector_complex *cv, const gsl_vector_complex *cv2);
 int gsl_vector_complex_add_constant(gsl_vector_complex *cv, gsl_complex b);
 int gsl_vector_complex_scale(gsl_vector_complex *cv, gsl_complex b);
-gsl_vector_view* rb_gsl_make_vector_view(double *data, size_t size, size_t stride);
-gsl_vector_int_view* rb_gsl_make_vector_int_view(int *data, size_t size, size_t stride);
+VALUE rb_gsl_make_vector_view(VALUE obj, VALUE klass, double *data, size_t size, size_t stride);
+VALUE rb_gsl_make_vector_int_view(VALUE obj, VALUE klass, int *data, size_t size, size_t stride);
+VALUE rb_gsl_make_vector_complex_view(VALUE obj, VALUE klass, double *data, size_t size, size_t stride);
+
+VALUE rb_gsl_vector_view_from_gsl(VALUE obj, VALUE klass, gsl_vector_view view);
+VALUE rb_gsl_vector_int_view_from_gsl(VALUE obj, VALUE klass, gsl_vector_int_view view);
+VALUE rb_gsl_vector_complex_view_from_gsl(VALUE obj, VALUE klass, gsl_vector_complex_view view);
 
 void Init_gsl_array_complex(VALUE module);
 void Init_gsl_vector(VALUE module);
@@ -147,8 +148,6 @@ void Init_gsl_matrix_int(VALUE module);
 VALUE rb_gsl_range2ary(VALUE obj);
 
 void Init_gsl_vector_int();
-gsl_vector_int_view* rb_gsl_vector_int_view_alloc(size_t n);
-void rb_gsl_vector_int_view_free(gsl_vector_int_view *v);
 gsl_vector_int* make_vector_int_clone(const gsl_vector_int *v);
 gsl_matrix_int_view* rb_gsl_matrix_int_view_alloc();
 void rb_gsl_matrix_int_view_free(gsl_matrix_int_view *v);

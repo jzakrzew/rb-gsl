@@ -119,50 +119,30 @@ static VALUE rb_gsl_histogram3d_shape(VALUE obj)
 static VALUE rb_gsl_histogram3d_xrange(VALUE obj)
 {
   mygsl_histogram3d *h = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, mygsl_histogram3d, h);
-  v = gsl_vector_view_alloc(h->nx);
-  v->vector.data = h->xrange;
-  v->vector.size = h->nx + 1;
-  v->vector.stride = 1;
-  return Data_Wrap_Struct(cgsl_histogram_range, 0, gsl_vector_view_free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_histogram_range, h->xrange, h->nx + 1, 1);
 }
 
 static VALUE rb_gsl_histogram3d_yrange(VALUE obj)
 {
   mygsl_histogram3d *h = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, mygsl_histogram3d, h);
-  v = gsl_vector_view_alloc(h->ny);
-  v->vector.data = h->yrange;
-  v->vector.size = h->ny + 1;
-  v->vector.stride = 1;
-  return Data_Wrap_Struct(cgsl_histogram_range, 0, gsl_vector_view_free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_histogram_range, h->yrange, h->ny + 1, 1);
 }
 
 static VALUE rb_gsl_histogram3d_zrange(VALUE obj)
 {
   mygsl_histogram3d *h = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, mygsl_histogram3d, h);
-  v = gsl_vector_view_alloc(h->nz);
-  v->vector.data = h->zrange;
-  v->vector.size = h->nz + 1;
-  v->vector.stride = 1;
-  return Data_Wrap_Struct(cgsl_histogram_range, 0, gsl_vector_view_free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_histogram_range, h->zrange, h->nz + 1, 1);
 }
 
 static VALUE rb_gsl_histogram3d_bin(VALUE obj)
 {
   mygsl_histogram3d *h = NULL;
   size_t n = h->nx*h->ny*h->nz;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, mygsl_histogram3d, h);
-  v = gsl_vector_view_alloc(n);
-  v->vector.data = h->bin;
-  v->vector.size = n;
-  v->vector.stride = 1;
-  return Data_Wrap_Struct(cgsl_vector_view, 0, gsl_vector_view_free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_vector_view, h->bin, n, 1);
 }
 
 static VALUE rb_gsl_histogram3d_get(int argc, VALUE *argv, VALUE obj)

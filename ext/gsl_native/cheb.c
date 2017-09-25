@@ -50,27 +50,15 @@ static VALUE rb_gsl_cheb_b(VALUE obj)
 static VALUE rb_gsl_cheb_coef(VALUE obj)
 {
   gsl_cheb_series *p = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, gsl_cheb_series, p);
-  v = gsl_vector_view_alloc();
-  v->vector.data = p->c;
-  v->vector.size = p->order + 1;
-  v->vector.stride = 1;
-  v->vector.owner = 0;
-  return Data_Wrap_Struct(cgsl_vector_view_ro, 0, gsl_vector_view_free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_vector_view_ro, p->c, p->order + 1, 1);
 }
 
 static VALUE rb_gsl_cheb_f(VALUE obj)
 {
   gsl_cheb_series *p = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, gsl_cheb_series, p);
-  v = gsl_vector_view_alloc();
-  v->vector.data = p->f;
-  v->vector.size = p->order + 1;
-  v->vector.stride = 1;
-  v->vector.owner = 0;
-  return Data_Wrap_Struct(cgsl_vector_view_ro, 0, gsl_vector_view_free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_vector_view_ro, p->f, p->order + 1, 1);
 }
 
 static VALUE rb_gsl_cheb_init(VALUE obj, VALUE ff, VALUE aa, VALUE bb)
@@ -122,7 +110,7 @@ static VALUE rb_gsl_cheb_eval(VALUE obj, VALUE xx)
         gsl_vector_set(vnew, i, gsl_cheb_eval(p, gsl_vector_get(v, i)));
       }
       return Data_Wrap_Struct(cgsl_vector, 0, gsl_vector_free, vnew);
-    } 
+    }
 #ifdef HAVE_NMATRIX_H
     else if (NM_IsNMatrix(xx)) {
       NM_DENSE_STORAGE *nm;

@@ -977,38 +977,29 @@ static VALUE rb_gsl_integration_workspace_to_a(VALUE obj)
 static VALUE rb_gsl_integration_workspace_alist(VALUE obj)
 {
   gsl_integration_workspace *w = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, gsl_integration_workspace, w);
-  v = rb_gsl_make_vector_view(w->alist, w->limit, 1);
-  return Data_Wrap_Struct(cgsl_vector_view_ro, 0, free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_vector_view_ro, w->alist, w->limit, 1);
 }
 
 static VALUE rb_gsl_integration_workspace_blist(VALUE obj)
 {
   gsl_integration_workspace *w = NULL;
-  gsl_vector_view *v = NULL;
-
   Data_Get_Struct(obj, gsl_integration_workspace, w);
-  v = rb_gsl_make_vector_view(w->blist, w->limit, 1);
-  return Data_Wrap_Struct(cgsl_vector_view_ro, 0, free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_vector_view_ro, w->blist, w->limit, 1);
 }
 
 static VALUE rb_gsl_integration_workspace_rlist(VALUE obj)
 {
   gsl_integration_workspace *w = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, gsl_integration_workspace, w);
-  v = rb_gsl_make_vector_view(w->rlist, w->limit, 1);
-  return Data_Wrap_Struct(cgsl_vector_view_ro, 0, free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_vector_view_ro, w->rlist, w->limit, 1);
 }
 
 static VALUE rb_gsl_integration_workspace_elist(VALUE obj)
 {
   gsl_integration_workspace *w = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, gsl_integration_workspace, w);
-  v = rb_gsl_make_vector_view(w->elist, w->limit, 1);
-  return Data_Wrap_Struct(cgsl_vector_view_ro, 0, free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_vector_view_ro, w->elist, w->limit, 1);
 }
 
 static VALUE rb_gsl_integration_glfixed_table_alloc(VALUE klass, VALUE n)
@@ -1151,4 +1142,3 @@ void Init_gsl_integration(VALUE module)
 #ifdef CHECK_WORKSPACE
 #undef CHECK_WORKSPACE
 #endif
-

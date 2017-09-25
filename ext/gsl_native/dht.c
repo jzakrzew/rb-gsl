@@ -78,7 +78,7 @@ static VALUE rb_gsl_dht_apply(int argc, VALUE *argv, VALUE obj)
       NM_DENSE_STORAGE *nm;
       nm = NM_STORAGE_DENSE(argv[0]);
       ptr1 = (double*)nm->elements;
-      ary = rb_nmatrix_dense_create(FLOAT64, nm->shape, nm->dim, nm->elements, 
+      ary = rb_nmatrix_dense_create(FLOAT64, nm->shape, nm->dim, nm->elements,
         NM_DENSE_COUNT(argv[0]));
       ptr2 = (double*)NM_DENSE_ELEMENTS(ary);
 #endif
@@ -156,7 +156,7 @@ static VALUE rb_gsl_dht_xk_sample(VALUE obj, VALUE n,
       nm = NM_STORAGE_DENSE(n);
       ptr = (int*) nm->elements;
       size = NM_DENSE_COUNT(n);
-      ary = rb_nmatrix_dense_create(FLOAT64, nm->shape, nm->dim, nm->elements, 
+      ary = rb_nmatrix_dense_create(FLOAT64, nm->shape, nm->dim, nm->elements,
         NM_DENSE_COUNT(n));
       ptr2 = (double*)NM_DENSE_ELEMENTS(ary);
       for (i = 0; i < size; i++) {
@@ -186,28 +186,22 @@ static VALUE rb_gsl_dht_k_sample(VALUE obj, VALUE n)
 static VALUE rb_gsl_dht_j(VALUE obj)
 {
   gsl_dht *t = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, gsl_dht, t);
-  v = rb_gsl_make_vector_view(t->j, (t->size+2), 1);
-  return Data_Wrap_Struct(cgsl_vector_view_ro, 0, free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_vector_view_ro, t->j, (t->size+2), 1);
 }
 
 static VALUE rb_gsl_dht_zero(VALUE obj)
 {
   gsl_dht *t = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, gsl_dht, t);
-  v = rb_gsl_make_vector_view(t->j+1, (t->size+1), 1);
-  return Data_Wrap_Struct(cgsl_vector_view_ro, 0, free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_vector_view_ro, t->j+1, (t->size+1), 1);
 }
 
 static VALUE rb_gsl_dht_Jjj(VALUE obj)
 {
   gsl_dht *t = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, gsl_dht, t);
-  v = rb_gsl_make_vector_view(t->Jjj, t->size*(t->size+1)/2, 1);
-  return Data_Wrap_Struct(cgsl_vector_view_ro, 0, free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_vector_view_ro, t->Jjj, t->size*(t->size+1)/2, 1);
 }
 
 static VALUE rb_gsl_dht_sample(int argc, VALUE *argv, VALUE obj)
@@ -275,19 +269,15 @@ static VALUE rb_gsl_dht_num(int argc, VALUE *argv, VALUE obj)
 static VALUE rb_gsl_dht_J2(VALUE obj)
 {
   gsl_dht *t = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, gsl_dht, t);
-  v = rb_gsl_make_vector_view(t->J2, t->size+1, 1);
-  return Data_Wrap_Struct(cgsl_vector_view_ro, 0, free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_vector_view_ro, t->J2, t->size+1, 1);
 }
 
 static VALUE rb_gsl_dht_den(VALUE obj)
 {
   gsl_dht *t = NULL;
-  gsl_vector_view *v = NULL;
   Data_Get_Struct(obj, gsl_dht, t);
-  v = rb_gsl_make_vector_view(t->J2+1, t->size, 1);
-  return Data_Wrap_Struct(cgsl_vector_view_ro, 0, free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_vector_view_ro, t->J2+1, t->size, 1);
 }
 
 static VALUE rb_gsl_dht_size(VALUE obj)

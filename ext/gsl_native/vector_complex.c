@@ -16,6 +16,17 @@ EXTERN VALUE cgsl_complex;
 static VALUE rb_gsl_vector_complex_inner_product(int argc, VALUE *argv, VALUE obj);
 static VALUE rb_gsl_vector_complex_product_to_m(int argc, VALUE *argv, VALUE obj);
 
+typedef struct rb_gsl_vector_complex_view {
+  /* view should be the first member, as the code below relies on this (due to typecasts) */
+  gsl_vector_complex_view view;
+  VALUE obj;  /* the object to which vector's lifetime is bound to */
+} rb_gsl_vector_complex_view;
+
+static void rb_gsl_vector_complex_view_mark(rb_gsl_vector_complex_view *vv)
+{
+  rb_gc_mark(vv->obj);
+}
+
 // From vector_source.c
 void get_range_beg_en_n(VALUE range, double *beg, double *en, size_t *n, int *step);
 //
@@ -571,27 +582,25 @@ static VALUE rb_gsl_vector_complex_fscanf(VALUE obj, VALUE io)
 static VALUE rb_gsl_vector_complex_real(VALUE obj)
 {
   gsl_vector_complex *c = NULL;
-  gsl_vector_view *vv = NULL;
+  gsl_vector_view vv;
   Data_Get_Struct(obj, gsl_vector_complex, c);
-  vv = gsl_vector_view_alloc();
-  *vv = gsl_vector_complex_real(c);
+  vv = gsl_vector_complex_real(c);
   if (VECTOR_COMPLEX_ROW_P(obj))
-    return Data_Wrap_Struct(cgsl_vector_view, 0, gsl_vector_view_free, vv);
+    return rb_gsl_vector_view_from_gsl(obj, cgsl_vector_view, vv);
   else
-    return Data_Wrap_Struct(cgsl_vector_col_view, 0, gsl_vector_view_free, vv);
+    return rb_gsl_vector_view_from_gsl(obj, cgsl_vector_col_view, vv);
 }
 
 static VALUE rb_gsl_vector_complex_imag(VALUE obj)
 {
   gsl_vector_complex *c = NULL;
-  gsl_vector_view *vv = NULL;
+  gsl_vector_view vv;
   Data_Get_Struct(obj, gsl_vector_complex, c);
-  vv = gsl_vector_view_alloc();
-  *vv = gsl_vector_complex_imag(c);
+  vv = gsl_vector_complex_imag(c);
   if (VECTOR_COMPLEX_ROW_P(obj))
-    return Data_Wrap_Struct(cgsl_vector_view, 0, gsl_vector_view_free, vv);
+    return rb_gsl_vector_view_from_gsl(obj, cgsl_vector_view, vv);
   else
-    return Data_Wrap_Struct(cgsl_vector_col_view, 0, gsl_vector_view_free, vv);
+    return rb_gsl_vector_view_from_gsl(obj, cgsl_vector_col_view, vv);
 }
 
 static VALUE rb_gsl_vector_complex_set_real(VALUE obj, VALUE val)
@@ -677,14 +686,6 @@ static VALUE rb_gsl_vector_complex_to_a2(VALUE obj)
   return ary;
 }
 
-gsl_vector_complex_view* gsl_vector_complex_view_alloc()
-{
-  gsl_vector_complex_view *vv = NULL;
-  vv = ALLOC(gsl_vector_complex_view);
-  if (vv == NULL) rb_raise(rb_eRuntimeError, "malloc failed");
-  return vv;
-}
-
 void gsl_vector_complex_view_free(gsl_vector_view * vv)
 {
   free((gsl_vector_complex_view *) vv);
@@ -693,22 +694,21 @@ void gsl_vector_complex_view_free(gsl_vector_view * vv)
 static VALUE rb_gsl_vector_complex_subvector(int argc, VALUE *argv, VALUE obj)
 {
   gsl_vector_complex *v = NULL;
-  gsl_vector_complex_view *vv = NULL;
+  gsl_vector_complex_view vv;
   size_t offset, stride, n;
   Data_Get_Struct(obj, gsl_vector_complex, v);
   parse_subvector_args(argc, argv, v->size, &offset, &stride, &n);
-  vv = gsl_vector_complex_view_alloc();
-  *vv = gsl_vector_complex_subvector_with_stride(v, offset, stride, n);
+  vv = gsl_vector_complex_subvector_with_stride(v, offset, stride, n);
   if (VECTOR_COMPLEX_ROW_P(obj))
-    return Data_Wrap_Struct(cgsl_vector_complex_view, 0, gsl_vector_complex_view_free, vv);
+    return rb_gsl_vector_complex_view_from_gsl(obj, cgsl_vector_complex_view, vv);
   else
-    return Data_Wrap_Struct(cgsl_vector_complex_col_view, 0, gsl_vector_complex_view_free, vv);
+    return rb_gsl_vector_complex_view_from_gsl(obj, cgsl_vector_complex_col_view, vv);
 }
 
 static VALUE rb_gsl_vector_complex_subvector_with_stride(VALUE obj, VALUE o, VALUE s, VALUE nn)
 {
   gsl_vector_complex *v = NULL;
-  gsl_vector_complex_view *vv = NULL;
+  gsl_vector_complex_view vv;
   int offset;
   CHECK_FIXNUM(o); CHECK_FIXNUM(nn); CHECK_FIXNUM(s);
   offset = NUM2INT(o);
@@ -716,12 +716,11 @@ static VALUE rb_gsl_vector_complex_subvector_with_stride(VALUE obj, VALUE o, VAL
   if(offset < 0) {
     offset += v->size;
   }
-  vv = gsl_vector_complex_view_alloc();
-  *vv = gsl_vector_complex_subvector_with_stride(v, (size_t)offset, FIX2INT(s), FIX2INT(nn));
+  vv = gsl_vector_complex_subvector_with_stride(v, (size_t)offset, FIX2INT(s), FIX2INT(nn));
   if (VECTOR_COMPLEX_ROW_P(obj))
-    return Data_Wrap_Struct(cgsl_vector_complex_view, 0, gsl_vector_complex_view_free, vv);
+    return rb_gsl_vector_complex_view_from_gsl(obj, cgsl_vector_complex_view, vv);
   else
-    return Data_Wrap_Struct(cgsl_vector_complex_col_view, 0, gsl_vector_complex_view_free, vv);
+    return rb_gsl_vector_complex_view_from_gsl(obj, cgsl_vector_complex_col_view, vv);
 }
 
 /* singleton */
@@ -2025,6 +2024,29 @@ static VALUE rb_gsl_vector_complex_not_equal(int argc, VALUE *argv, VALUE obj)
   ret = rb_gsl_vector_complex_equal(argc, argv, obj);
   if (ret == Qtrue) return Qfalse;
   else return Qtrue;
+}
+
+
+VALUE rb_gsl_vector_complex_view_from_gsl(VALUE obj, VALUE klass,
+                                          gsl_vector_complex_view view)
+{
+  rb_gsl_vector_complex_view *v = NULL;
+  v = ALLOC(rb_gsl_vector_complex_view);
+  v->obj = obj;
+  v->view = view;
+  return Data_Wrap_Struct(klass, rb_gsl_vector_complex_view_mark, xfree, v);
+}
+
+VALUE rb_gsl_make_vector_complex_view(VALUE obj, VALUE klass, double *data,
+                                      size_t size, size_t stride)
+{
+  gsl_vector_complex_view view;
+  view.vector.size = size;
+  view.vector.stride = stride;
+  view.vector.data = data;
+  view.vector.block = NULL;
+  view.vector.owner = 0;
+  return rb_gsl_vector_complex_view_from_gsl(obj, klass, view);
 }
 
 void Init_gsl_vector_complex(VALUE module)

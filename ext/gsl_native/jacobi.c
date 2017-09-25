@@ -262,49 +262,29 @@ static VALUE rb_jac_quadrature_beta(VALUE obj)
 static VALUE rb_jac_quadrature_x(VALUE obj)
 {
   jac_quadrature *q;
-  gsl_vector_view *v;
   Data_Get_Struct(obj, jac_quadrature, q);
-  v = gsl_vector_view_alloc();
-  v->vector.data = q->x;
-  v->vector.size = q->Q;
-  v->vector.stride = 1;
-  return Data_Wrap_Struct(cgsl_vector_view, 0, gsl_vector_view_free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_vector_view, q->x, q->Q, 1);
 }
 
 static VALUE rb_jac_quadrature_w(VALUE obj)
 {
   jac_quadrature *q;
-  gsl_vector_view *v;
   Data_Get_Struct(obj, jac_quadrature, q);
-  v = gsl_vector_view_alloc();
-  v->vector.data = q->w;
-  v->vector.size = q->Q;
-  v->vector.stride = 1;
-  return Data_Wrap_Struct(cgsl_vector_view, 0, gsl_vector_view_free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_vector_view, q->w, q->Q, 1);
 }
 
 static VALUE rb_jac_quadrature_D(VALUE obj)
 {
   jac_quadrature *q;
-  gsl_vector_view *v;
   Data_Get_Struct(obj, jac_quadrature, q);
-  v = gsl_vector_view_alloc();
-  v->vector.data = q->D;
-  v->vector.size = q->Q;
-  v->vector.stride = 1;
-  return Data_Wrap_Struct(cgsl_vector_view, 0, gsl_vector_view_free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_vector_view, q->D, q->Q, 1);
 }
 
 static VALUE rb_jac_quadrature_xp(VALUE obj)
 {
   jac_quadrature *q;
-  gsl_vector_view *v;
   Data_Get_Struct(obj, jac_quadrature, q);
-  v = gsl_vector_view_alloc();
-  v->vector.data = q->w;
-  v->vector.size = q->np;
-  v->vector.stride = 1;
-  return Data_Wrap_Struct(cgsl_vector_view, 0, gsl_vector_view_free, v);
+  return rb_gsl_make_vector_view(obj, cgsl_vector_view, q->w, q->np, 1);
 }
 
 static VALUE rb_jac_interpmat_alloc(int argc, VALUE *argv, VALUE obj)
@@ -730,4 +710,3 @@ void Init_jacobi(VALUE module)
 }
 
 #endif
-

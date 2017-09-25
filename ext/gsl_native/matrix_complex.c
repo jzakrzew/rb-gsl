@@ -955,33 +955,30 @@ static VALUE rb_gsl_matrix_complex_submatrix(int argc, VALUE *argv, VALUE obj)
 static VALUE rb_gsl_matrix_complex_row(VALUE obj, VALUE i)
 {
   gsl_matrix_complex *m = NULL;
-  gsl_vector_complex_view *vv = NULL;
+  gsl_vector_complex_view vv;
   CHECK_FIXNUM(i);
   Data_Get_Struct(obj, gsl_matrix_complex, m);
-  vv = gsl_vector_complex_view_alloc();
-  *vv = gsl_matrix_complex_row(m, FIX2INT(i));
-  return Data_Wrap_Struct(cgsl_vector_complex_view, 0, gsl_vector_complex_view_free, vv);
+  vv = gsl_matrix_complex_row(m, FIX2INT(i));
+  return rb_gsl_vector_complex_view_from_gsl(obj, cgsl_vector_complex_view, vv);
 }
 
 static VALUE rb_gsl_matrix_complex_column(VALUE obj, VALUE i)
 {
   gsl_matrix_complex *m = NULL;
-  gsl_vector_complex_view *vv = NULL;
+  gsl_vector_complex_view vv;
   CHECK_FIXNUM(i);
   Data_Get_Struct(obj, gsl_matrix_complex, m);
-  vv = gsl_vector_complex_view_alloc();
-  *vv = gsl_matrix_complex_column(m, FIX2INT(i));
-  return Data_Wrap_Struct(cgsl_vector_complex_col_view, 0, gsl_vector_complex_view_free, vv);
+  vv = gsl_matrix_complex_column(m, FIX2INT(i));
+  return rb_gsl_vector_complex_view_from_gsl(obj, cgsl_vector_complex_col_view, vv);
 }
 
 static VALUE rb_gsl_matrix_complex_diagonal(VALUE obj)
 {
   gsl_matrix_complex *m = NULL;
-  gsl_vector_complex_view *vv = NULL;
+  gsl_vector_complex_view vv;
   Data_Get_Struct(obj, gsl_matrix_complex, m);
-  vv = gsl_vector_complex_view_alloc();
-  *vv = gsl_matrix_complex_diagonal(m);
-  return Data_Wrap_Struct(cgsl_vector_complex_view, 0, gsl_vector_complex_view_free, vv);
+  vv = gsl_matrix_complex_diagonal(m);
+  return rb_gsl_vector_complex_view_from_gsl(obj, cgsl_vector_complex_col_view, vv);
 }
 
 static VALUE rb_gsl_matrix_complex_set_diagonal(VALUE obj, VALUE diag)
@@ -1003,23 +1000,21 @@ static VALUE rb_gsl_matrix_complex_set_diagonal(VALUE obj, VALUE diag)
 static VALUE rb_gsl_matrix_complex_subdiagonal(VALUE obj, VALUE i)
 {
   gsl_matrix_complex *m = NULL;
-  gsl_vector_complex_view *vv = NULL;
+  gsl_vector_complex_view vv;
   CHECK_FIXNUM(i);
   Data_Get_Struct(obj, gsl_matrix_complex, m);
-  vv = gsl_vector_complex_view_alloc();
-  *vv = gsl_matrix_complex_subdiagonal(m, FIX2INT(i));
-  return Data_Wrap_Struct(cgsl_vector_complex_view, 0, gsl_vector_complex_view_free, vv);
+  vv = gsl_matrix_complex_subdiagonal(m, FIX2INT(i));
+  return rb_gsl_vector_complex_view_from_gsl(obj, cgsl_vector_complex_view, vv);
 }
 
 static VALUE rb_gsl_matrix_complex_superdiagonal(VALUE obj, VALUE i)
 {
   gsl_matrix_complex *m = NULL;
-  gsl_vector_complex_view *vv = NULL;
+  gsl_vector_complex_view vv;
   CHECK_FIXNUM(i);
   Data_Get_Struct(obj, gsl_matrix_complex, m);
-  vv = gsl_vector_complex_view_alloc();
-  *vv = gsl_matrix_complex_superdiagonal(m, FIX2INT(i));
-  return Data_Wrap_Struct(cgsl_vector_complex_view, 0, gsl_vector_complex_view_free, vv);
+  vv = gsl_matrix_complex_superdiagonal(m, FIX2INT(i));
+  return rb_gsl_vector_complex_view_from_gsl(obj, cgsl_vector_complex_view, vv);
 }
 
 static VALUE rb_gsl_matrix_complex_coerce(VALUE obj, VALUE other)

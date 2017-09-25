@@ -429,21 +429,6 @@ VALUE rb_gsl_range2vector_int(VALUE obj)
   return Data_Wrap_Struct(cgsl_vector_int, 0, gsl_vector_int_free, v);
 }
 
-gsl_vector_int_view* rb_gsl_vector_int_view_alloc(size_t n)
-{
-  gsl_vector_int_view *v;
-  v = ALLOC(gsl_vector_int_view);
-  v->vector.size = n;
-  v->vector.stride = 1;
-  v->vector.owner = 0;
-  return v;
-}
-
-void rb_gsl_vector_int_view_free(gsl_vector_int_view *v)
-{
-  free((gsl_vector_int_view *) v);
-}
-
 gsl_matrix_view* rb_gsl_matrix_view_alloc()
 {
   gsl_matrix_view *mv = NULL;

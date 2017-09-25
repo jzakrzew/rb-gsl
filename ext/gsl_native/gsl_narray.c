@@ -193,8 +193,7 @@ static VALUE rb_gsl_na_to_gsl_vector(VALUE obj, VALUE na)
 
 static VALUE rb_gsl_na_to_gsl_vector_view(VALUE obj, VALUE na)
 {
-  return Data_Wrap_Struct(cgsl_vector_view, 0, gsl_vector_view_free,
-                          na_to_gv_view(na));
+  return na_to_gv_view(na);
 }
 
 static VALUE rb_gsl_na_to_gsl_vector_complex(VALUE obj, VALUE na)
@@ -205,8 +204,7 @@ static VALUE rb_gsl_na_to_gsl_vector_complex(VALUE obj, VALUE na)
 
 static VALUE rb_gsl_na_to_gsl_vector_complex_view(VALUE obj, VALUE na)
 {
-  return Data_Wrap_Struct(cgsl_vector_complex_view, 0, gsl_vector_complex_view_free,
-                          na_to_gv_complex_view(na));
+  return na_to_gv_complex_view(na);
 }
 
 static VALUE rb_gsl_na_to_gsl_vector_int(VALUE obj, VALUE na)
@@ -217,8 +215,7 @@ static VALUE rb_gsl_na_to_gsl_vector_int(VALUE obj, VALUE na)
 
 static VALUE rb_gsl_na_to_gsl_vector_int_view(VALUE obj, VALUE na)
 {
-  return Data_Wrap_Struct(cgsl_vector_int_view, 0, rb_gsl_vector_int_view_free,
-                          na_to_gv_int_view(na));
+  return na_to_gv_int_view(na);
 }
 
 static VALUE rb_gsl_na_to_gsl_vector_method(VALUE na)
@@ -239,11 +236,9 @@ VALUE rb_gsl_na_to_gsl_vector_view_method(VALUE na)
   VALUE v;
 
   if(NA_TYPE(na) == NA_SCOMPLEX || NA_TYPE(na) == NA_DCOMPLEX)
-    v = Data_Wrap_Struct(cgsl_vector_complex_view, 0, gsl_vector_complex_view_free,
-                         na_to_gv_complex_view(na));
+    v = na_to_gv_complex_view(na);
   else
-    v = Data_Wrap_Struct(cgsl_vector_view, 0, gsl_vector_view_free,
-                         na_to_gv_view(na));
+    v = na_to_gv_view(na);
   return v;
 }
 
@@ -255,8 +250,7 @@ static VALUE rb_gsl_na_to_gsl_vector_int_method(VALUE na)
 
 static VALUE rb_gsl_na_to_gsl_vector_int_view_method(VALUE na)
 {
-  return Data_Wrap_Struct(cgsl_vector_int_view, 0, rb_gsl_vector_int_view_free,
-                          na_to_gv_int_view(na));
+  return na_to_gv_int_view(na);
 }
 
 gsl_vector* na_to_gv(VALUE na)
@@ -271,19 +265,14 @@ gsl_vector* na_to_gv(VALUE na)
   return v;
 }
 
-gsl_vector_view* na_to_gv_view(VALUE na)
+VALUE na_to_gv_view(VALUE na)
 {
-  gsl_vector_view *v = NULL;
-
   // Raise exception if na's type is not NA_DFLOAT.
   if(NA_TYPE(na) != NA_DFLOAT)
     rb_raise(rb_eTypeError, "GSL::Vector::View requires NArray be DFLOAT");
-  v = gsl_vector_view_alloc();
-  v->vector.data = NA_PTR_TYPE(na,double*);
-  v->vector.size = NA_TOTAL(na);
-  v->vector.stride = 1;
-  v->vector.owner = 0;
-  return v;
+
+  return rb_gsl_make_vector_view(na, cgsl_vector_view,
+                                 NA_PTR_TYPE(na,double*), NA_TOTAL(na), 1);
 }
 
 gsl_vector_complex* na_to_gv_complex(VALUE na)
@@ -298,19 +287,14 @@ gsl_vector_complex* na_to_gv_complex(VALUE na)
   return v;
 }
 
-gsl_vector_complex_view* na_to_gv_complex_view(VALUE na)
+VALUE na_to_gv_complex_view(VALUE na)
 {
-  gsl_vector_complex_view *v = NULL;
-
   // Raise exception if na's type is not NA_DCOMPLEX
   if(NA_TYPE(na) != NA_DCOMPLEX)
     rb_raise(rb_eTypeError, "GSL::Vector::Complex::View requires NArray be DCOMPLEX");
-  v = gsl_vector_complex_view_alloc();
-  v->vector.data = NA_PTR_TYPE(na,double*);
-  v->vector.size = NA_TOTAL(na);
-  v->vector.stride = 1;
-  v->vector.owner = 0;
-  return v;
+
+  return rb_gsl_make_vector_complex_view(na, cgsl_vector_complex_view,
+                                         NA_PTR_TYPE(na,double*), NA_TOTAL(na), 1)
 }
 
 gsl_vector_int* na_to_gv_int(VALUE na)
@@ -325,19 +309,14 @@ gsl_vector_int* na_to_gv_int(VALUE na)
   return v;
 }
 
-gsl_vector_int_view* na_to_gv_int_view(VALUE na)
+VALUE na_to_gv_int_view(VALUE na)
 {
-  gsl_vector_int_view *v = NULL;
-
   // Raise exception if na's type is not NA_LINT
   if(NA_TYPE(na) != NA_LINT)
     rb_raise(rb_eTypeError, "GSL::Vector::Int::View requires NArray be LINT");
-  v = rb_gsl_vector_int_view_alloc(NA_TOTAL(na));
-  v->vector.data = NA_PTR_TYPE(na,int*);
-  v->vector.size = NA_TOTAL(na);
-  v->vector.stride = 1;
-  v->vector.owner = 0;
-  return v;
+
+  return rb_gsl_make_vector_view(na, cgsl_vector_int_view,
+                                 NA_PTR_TYPE(na,int*), NA_TOTAL(na), 1);
 }
 
 static VALUE rb_gsl_matrix_to_narray(VALUE obj, VALUE klass)
