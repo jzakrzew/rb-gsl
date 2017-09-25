@@ -2,6 +2,22 @@ require 'test_helper'
 
 class VectorTest < GSL::TestCase
 
+  def test_join
+    a = GSL::Vector.alloc([1, 2, 3])
+    assert_equal a.join("\n"), "1.000e+00\n2.000e+00\n3.000e+00"
+  end
+
+  def test_join_defualt_sep
+    a = GSL::Vector.alloc([1, 2, 3])
+    assert_equal a.join, "1.000e+00 2.000e+00 3.000e+00"
+  end
+
+  def test_join_long_sep
+    sep = ' ' * 20000
+    a = GSL::Vector.alloc([1, 2])
+    assert_equal a.join(sep), "1.000e+00#{sep}2.000e+00"
+  end
+
   def test_get
     v = GSL::Vector::Int.indgen(5)
     assert_equal GSL::Vector::Int[3, 1, 2], v.get([3, 1, 2])
@@ -134,6 +150,26 @@ class VectorTest < GSL::TestCase
   def test_complex_get
     v = GSL::Vector::Complex.indgen(5)
     assert_equal GSL::Vector::Complex[[3, 0], [1, 0], [2, 0]], v.get([3, 1, 2])
+  end
+
+  def test_complex_zip
+    v = GSL::Vector::Complex.indgen(5)
+    w = GSL::Vector::Complex.indgen(5)
+    expected = v.len.times.collect {|i| GSL::Vector::Complex.alloc([v[i], w[i]])}
+    assert_equal v.zip(w), expected
+  end
+
+  def test_complex_zip_no_args
+    v = GSL::Vector::Complex.indgen(5)
+    expected = v.len.times.collect {|i| GSL::Vector::Complex.alloc([v[i]])}
+    assert_equal v.zip, expected
+  end
+
+  def test_complex_zip_many_args
+    argc = 2000
+    v = GSL::Vector::Complex.alloc([[1, 2]])
+    expected = [GSL::Vector::Complex.alloc([[1, 2]]*(argc+1))]
+    assert_equal v.zip(*([v]*argc)), expected
   end
 
   def test_complex_addsub
