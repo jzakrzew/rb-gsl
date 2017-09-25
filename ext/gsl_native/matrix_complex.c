@@ -932,19 +932,16 @@ static VALUE rb_gsl_matrix_complex_submatrix(int argc, VALUE *argv, VALUE obj)
 {
   gsl_matrix_complex *m = NULL;
   gsl_matrix_complex_view *mv = NULL;
-  gsl_vector_complex_view *vv = NULL;
   size_t i, j, n1, n2;
   Data_Get_Struct(obj, gsl_matrix_complex, m);
   parse_submatrix_args(argc, argv, m->size1, m->size2, &i, &j, &n1, &n2);
   if(n1 == 0) {
-    vv = ALLOC(gsl_vector_complex_view);
-    *vv = gsl_matrix_complex_subrow(m, i, j, n2);
-    return Data_Wrap_Struct(cgsl_vector_complex_view, 0, free, vv);
+    gsl_vector_complex_view vv = gsl_matrix_complex_subrow(m, i, j, n2);
+    return rb_gsl_vector_complex_view_from_gsl(obj, cgsl_vector_complex_view, vv);
   }
   else if(n2 == 0) {
-    vv = ALLOC(gsl_vector_complex_view);
-    *vv = gsl_matrix_complex_subcolumn(m, j, i, n1);
-    return Data_Wrap_Struct(cgsl_vector_complex_col_view, 0, free, vv);
+    gsl_vector_complex_view vv = gsl_matrix_complex_subcolumn(m, j, i, n1);
+    return rb_gsl_vector_complex_view_from_gsl(obj, cgsl_vector_complex_col_view, vv);
   } else {
     mv = ALLOC(gsl_matrix_complex_view);
     *mv = gsl_matrix_complex_submatrix(m, i, j, n1, n2);
@@ -1164,13 +1161,11 @@ static VALUE rb_gsl_matrix_complex_trace(VALUE obj)
 static VALUE rb_gsl_matrix_complex_each_row(VALUE obj)
 {
   gsl_matrix_complex *m = NULL;
-  gsl_vector_complex_view *vv;
   size_t i;
   Data_Get_Struct(obj, gsl_matrix_complex, m);
   for (i = 0; i < m->size1; i++) {
-    vv = ALLOC(gsl_vector_complex_view);
-    *vv = gsl_matrix_complex_row(m, i);
-    rb_yield(Data_Wrap_Struct(cgsl_vector_complex_view, 0, free, vv));
+    gsl_vector_complex_view vv = gsl_matrix_complex_row(m, i);
+    rb_yield(rb_gsl_vector_complex_view_from_gsl(obj, cgsl_vector_complex_view, vv));
   }
   return obj;
 }
@@ -1178,13 +1173,11 @@ static VALUE rb_gsl_matrix_complex_each_row(VALUE obj)
 static VALUE rb_gsl_matrix_complex_each_col(VALUE obj)
 {
   gsl_matrix_complex *m = NULL;
-  gsl_vector_complex_view *vv;
   size_t i;
   Data_Get_Struct(obj, gsl_matrix_complex, m);
   for (i = 0; i < m->size2; i++) {
-    vv = ALLOC(gsl_vector_complex_view);
-    *vv = gsl_matrix_complex_column(m, i);
-    rb_yield(Data_Wrap_Struct(cgsl_vector_complex_col_view, 0, free, vv));
+    gsl_vector_complex_view vv = gsl_matrix_complex_column(m, i);
+    rb_yield(rb_gsl_vector_complex_view_from_gsl(obj, cgsl_vector_complex_col_view, vv));
   }
   return obj;
 }

@@ -1337,19 +1337,16 @@ static VALUE FUNCTION(rb_gsl_matrix,submatrix)(int argc, VALUE *argv, VALUE obj)
 {
   GSL_TYPE(gsl_matrix) *m = NULL;
   QUALIFIED_VIEW(gsl_matrix,view) *mv = NULL;
-  QUALIFIED_VIEW(gsl_vector,view) *vv = NULL;
   size_t i, j, n1, n2;
   Data_Get_Struct(obj, GSL_TYPE(gsl_matrix), m);
   parse_submatrix_args(argc, argv, m->size1, m->size2, &i, &j, &n1, &n2);
   if(n1 == 0) {
-    vv = ALLOC(QUALIFIED_VIEW(gsl_vector,view));
-    *vv = FUNCTION(gsl_matrix,subrow)(m, i, j, n2);
-    return Data_Wrap_Struct(QUALIFIED_VIEW(cgsl_vector,view), 0, free, vv);
+    QUALIFIED_VIEW(gsl_vector,view) vv = FUNCTION(gsl_matrix,subrow)(m, i, j, n2);
+    return FUNCTION(rb_gsl_vector,view_from_gsl)(obj, QUALIFIED_VIEW(cgsl_vector,view), vv);
   }
   else if(n2 == 0) {
-    vv = ALLOC(QUALIFIED_VIEW(gsl_vector,view));
-    *vv = FUNCTION(gsl_matrix,subcolumn)(m, j, i, n1);
-    return Data_Wrap_Struct(QUALIFIED_VIEW(cgsl_vector,col_view), 0, free, vv);
+    QUALIFIED_VIEW(gsl_vector,view) vv = FUNCTION(gsl_matrix,subcolumn)(m, j, i, n1);
+    return FUNCTION(rb_gsl_vector,view_from_gsl)(obj, QUALIFIED_VIEW(cgsl_vector,col_view), vv);
   } else {
     mv = ALLOC(QUALIFIED_VIEW(gsl_matrix,view));
     *mv = FUNCTION(gsl_matrix,submatrix)(m, i, j, n1, n2);
@@ -1362,12 +1359,11 @@ static VALUE FUNCTION(rb_gsl_matrix,return_vector_view)(VALUE obj, VALUE index,
                                                                                              size_t))
 {
   GSL_TYPE(gsl_matrix) *m = NULL;
-  QUALIFIED_VIEW(gsl_vector,view) *vv = NULL;
+  QUALIFIED_VIEW(gsl_vector,view) vv;
   CHECK_FIXNUM(index);
   Data_Get_Struct(obj, GSL_TYPE(gsl_matrix), m);
-  vv = ALLOC(QUALIFIED_VIEW(gsl_vector,view));
-  *vv = (*f)(m, FIX2INT(index));
-  return Data_Wrap_Struct(QUALIFIED_VIEW(cgsl_vector,view), 0, free, vv);
+  vv = (*f)(m, FIX2INT(index));
+  return FUNCTION(rb_gsl_vector,view_from_gsl)(obj, QUALIFIED_VIEW(cgsl_vector,view), vv);
 }
 
 static VALUE FUNCTION(rb_gsl_matrix,row)(VALUE obj, VALUE i)
@@ -1378,43 +1374,39 @@ static VALUE FUNCTION(rb_gsl_matrix,row)(VALUE obj, VALUE i)
 static VALUE FUNCTION(rb_gsl_matrix,column)(VALUE obj, VALUE j)
 {
   GSL_TYPE(gsl_matrix) *m = NULL;
-  QUALIFIED_VIEW(gsl_vector,view) *vv = NULL;
+  QUALIFIED_VIEW(gsl_vector,view) vv;
   CHECK_FIXNUM(j);
   Data_Get_Struct(obj, GSL_TYPE(gsl_matrix), m);
-  vv = ALLOC(QUALIFIED_VIEW(gsl_vector,view));
-  *vv = FUNCTION(gsl_matrix,column)(m, FIX2INT(j));
-  return Data_Wrap_Struct(QUALIFIED_VIEW(cgsl_vector,col_view), 0, free, vv);
+  vv = FUNCTION(gsl_matrix,column)(m, FIX2INT(j));
+  return FUNCTION(rb_gsl_vector,view_from_gsl)(obj, QUALIFIED_VIEW(cgsl_vector,col_view), vv);
 }
 
 static VALUE FUNCTION(rb_gsl_matrix,subrow)(VALUE obj, VALUE i, VALUE offset,
                                             VALUE n)
 {
   GSL_TYPE(gsl_matrix) *m = NULL;
-  QUALIFIED_VIEW(gsl_vector,view) *vv = NULL;
+  QUALIFIED_VIEW(gsl_vector,view) vv;
   Data_Get_Struct(obj, GSL_TYPE(gsl_matrix), m);
-  vv = ALLOC(QUALIFIED_VIEW(gsl_vector,view));
-  *vv = FUNCTION(gsl_matrix,subrow)(m, FIX2INT(i), FIX2INT(offset), FIX2INT(n));
-  return Data_Wrap_Struct(QUALIFIED_VIEW(cgsl_vector,view), 0, free, vv);
+  vv = FUNCTION(gsl_matrix,subrow)(m, FIX2INT(i), FIX2INT(offset), FIX2INT(n));
+  return FUNCTION(rb_gsl_vector,view_from_gsl)(obj, QUALIFIED_VIEW(cgsl_vector,view), vv);
 }
 static VALUE FUNCTION(rb_gsl_matrix,subcolumn)(VALUE obj, VALUE j, VALUE offset,
                                                VALUE n)
 {
   GSL_TYPE(gsl_matrix) *m = NULL;
-  QUALIFIED_VIEW(gsl_vector,view) *vv = NULL;
+  QUALIFIED_VIEW(gsl_vector,view) vv;
   Data_Get_Struct(obj, GSL_TYPE(gsl_matrix), m);
-  vv = ALLOC(QUALIFIED_VIEW(gsl_vector,view));
-  *vv = FUNCTION(gsl_matrix,subcolumn)(m, FIX2INT(j), FIX2INT(offset), FIX2INT(n));
-  return Data_Wrap_Struct(QUALIFIED_VIEW(cgsl_vector,col_view), 0, free, vv);
+  vv = FUNCTION(gsl_matrix,subcolumn)(m, FIX2INT(j), FIX2INT(offset), FIX2INT(n));
+  return FUNCTION(rb_gsl_vector,view_from_gsl)(obj, QUALIFIED_VIEW(cgsl_vector,col_view), vv);
 }
 
 static VALUE FUNCTION(rb_gsl_matrix,diagonal)(VALUE obj)
 {
   GSL_TYPE(gsl_matrix) *m = NULL;
-  QUALIFIED_VIEW(gsl_vector,view) *vv = NULL;
+  QUALIFIED_VIEW(gsl_vector,view) vv;
   Data_Get_Struct(obj, GSL_TYPE(gsl_matrix), m);
-  vv = ALLOC(QUALIFIED_VIEW(gsl_vector,view));
-  *vv = FUNCTION(gsl_matrix,diagonal)(m);
-  return Data_Wrap_Struct(QUALIFIED_VIEW(cgsl_vector,view), 0, free, vv);
+  vv = FUNCTION(gsl_matrix,diagonal)(m);
+  return FUNCTION(rb_gsl_vector,view_from_gsl)(obj, QUALIFIED_VIEW(cgsl_vector,view), vv);
 }
 
 static VALUE FUNCTION(rb_gsl_matrix,subdiagonal)(VALUE obj, VALUE k)
@@ -1430,31 +1422,20 @@ static VALUE FUNCTION(rb_gsl_matrix,superdiagonal)(VALUE obj, VALUE k)
 static VALUE FUNCTION(rb_gsl_matrix,vector_view)(VALUE obj)
 {
   GSL_TYPE(gsl_matrix) *m = NULL;
-  QUALIFIED_VIEW(gsl_vector,view) *vv;
   Data_Get_Struct(obj, GSL_TYPE(gsl_matrix), m);
-  vv = ALLOC(QUALIFIED_VIEW(gsl_vector,view));
-  vv->vector.size = m->size1*m->size2;
-  vv->vector.owner = 0;
-  vv->vector.stride = 1;
-  vv->vector.data = m->data;
-  return Data_Wrap_Struct(QUALIFIED_VIEW(cgsl_vector,view), 0, free, vv);
+  return FUNCTION(rb_gsl_make_vector,view)(obj, QUALIFIED_VIEW(cgsl_vector,view),
+                                           m->data, m->size1 * m->size2, 1);
 }
 
 
 static VALUE FUNCTION(rb_gsl_matrix,each_row)(VALUE obj)
 {
   GSL_TYPE(gsl_matrix) *m = NULL;
-  QUALIFIED_VIEW(gsl_vector,view) *vv;
   size_t i;
   Data_Get_Struct(obj, GSL_TYPE(gsl_matrix), m);
   for (i = 0; i < m->size1; i++) {
-    vv = ALLOC(QUALIFIED_VIEW(gsl_vector,view));
-    *vv = FUNCTION(gsl_matrix,row)(m, i);
-#ifdef BASE_DOUBLE
-    rb_yield(Data_Wrap_Struct(cgsl_vector_view, 0, free, vv));
-#else
-    rb_yield(Data_Wrap_Struct(cgsl_vector_int_view, 0, free, vv));
-#endif
+    QUALIFIED_VIEW(gsl_vector,view) vv = FUNCTION(gsl_matrix,row)(m, i);
+    rb_yield(FUNCTION(rb_gsl_vector,view_from_gsl)(obj, QUALIFIED_VIEW(cgsl_vector,view), vv));
   }
   return obj;
 }
@@ -1462,17 +1443,11 @@ static VALUE FUNCTION(rb_gsl_matrix,each_row)(VALUE obj)
 static VALUE FUNCTION(rb_gsl_matrix,each_col)(VALUE obj)
 {
   GSL_TYPE(gsl_matrix) *m = NULL;
-  QUALIFIED_VIEW(gsl_vector,view) *vv;
   size_t i;
   Data_Get_Struct(obj, GSL_TYPE(gsl_matrix), m);
   for (i = 0; i < m->size2; i++) {
-    vv = ALLOC(QUALIFIED_VIEW(gsl_vector,view));
-    *vv = FUNCTION(gsl_matrix,column)(m, i);
-#ifdef BASE_DOUBLE
-    rb_yield(Data_Wrap_Struct(cgsl_vector_col_view, 0, free, vv));
-#else
-    rb_yield(Data_Wrap_Struct(cgsl_vector_int_col_view, 0, free, vv));
-#endif
+    QUALIFIED_VIEW(gsl_vector,view) vv = FUNCTION(gsl_matrix,column)(m, i);
+    rb_yield(FUNCTION(rb_gsl_vector,view_from_gsl)(obj, QUALIFIED_VIEW(cgsl_vector,col_view), vv));
   }
   return obj;
 }
@@ -1952,15 +1927,7 @@ static VALUE FUNCTION(rb_gsl_matrix,to_v)(VALUE obj)
 
 static VALUE FUNCTION(rb_gsl_matrix,to_vview)(VALUE obj)
 {
-  GSL_TYPE(gsl_matrix) *m;
-  QUALIFIED_VIEW(gsl_vector,view) *v;
-  Data_Get_Struct(obj, GSL_TYPE(gsl_matrix), m);
-  v = ALLOC(QUALIFIED_VIEW(gsl_vector,view));
-  v->vector.size = m->size1*m->size2;
-  v->vector.stride = 1;
-  v->vector.owner = 0;
-  v->vector.data = m->data;
-  return Data_Wrap_Struct(QUALIFIED_VIEW(cgsl_vector,view), 0, FUNCTION(gsl_vector,free), v);
+  return FUNCTION(rb_gsl_matrix,vector_view)(obj);
 }
 
 static VALUE FUNCTION(rb_gsl_matrix,norm)(VALUE obj)
