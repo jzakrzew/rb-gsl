@@ -2903,7 +2903,6 @@ static VALUE FUNCTION(rb_gsl_vector,join)(int argc, VALUE *argv, VALUE obj)
 {
   GSL_TYPE(gsl_vector) *v;
   VALUE str, sep;
-  char *p;
   size_t i;
   switch (argc) {
   case 0:
